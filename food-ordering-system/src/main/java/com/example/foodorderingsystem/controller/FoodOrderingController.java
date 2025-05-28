@@ -1,0 +1,59 @@
+package com.example.foodorderingsystem.controller;
+
+import com.example.foodorderingsystem.model.Order;
+import com.example.foodorderingsystem.model.Restaurant;
+import com.example.foodorderingsystem.service.OrderService;
+import com.example.foodorderingsystem.service.RestaurantService;
+
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
+
+@RestController
+@RequestMapping("/api")
+public class FoodOrderingController {
+
+    private final RestaurantService restaurantService;
+    private final OrderService orderService;
+
+    public FoodOrderingController(RestaurantService restaurantService, OrderService orderService) {
+        this.restaurantService = restaurantService;
+        this.orderService = orderService;
+    }
+
+    @PostMapping("/restaurant")
+    public ResponseEntity<?> onboardRestaurant(@RequestBody Restaurant restaurant) {
+        restaurantService.onboardRestaurant(restaurant);
+        return ResponseEntity.ok("Restaurant onboarded successfully");
+    }
+
+    @PutMapping("/restaurant/{name}/menu")
+    public ResponseEntity<?> updateMenu(@PathVariable String name, @RequestBody Map<String, Integer> updates) {
+        restaurantService.updateMenu(name, updates);
+        return ResponseEntity.ok("Menu updated successfully");
+    }
+
+    @PostMapping("/order")
+    public ResponseEntity<?> placeOrder(@RequestBody Order order) {
+        Order placedOrder = orderService.placeOrder(order);
+        if (placedOrder.getAssignedRestaurant() == null) {
+            return ResponseEntity.status(400).body("No restaurant could fulfill the order");
+        }
+        return ResponseEntity.ok(placedOrder);
+    }
+
+    @PostMapping("/order/{id}/complete")
+    public ResponseEntity<?> completeOrder(@PathVariable int id) {
+        orderService.markOrderComplete(id);
+        return ResponseEntity.ok("Order marked as completed");
+    }
+
+    @GetMapping("/order/{id}")
+    public ResponseEntity<?> getOrder(@PathVariable int id) {
+        Order order = orderService.getOrder(id);
+        if (order == null) return ResponseEntity.notFound().build();
+        return ResponseEntity.ok(order);
+    }
+}

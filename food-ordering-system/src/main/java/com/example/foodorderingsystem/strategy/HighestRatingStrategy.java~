@@ -1,0 +1,5 @@
+package com.example.foodorderingsystem.strategy;
+
+public class HighestRatingStrategy {
+
+}
